@@ -97,13 +97,13 @@ const playerObject = {
                     statRefresh()
                     break;
                 case 7:
-                    chance(this)
+                    chanceCard(this)
                     break;
                 case 22:
-                    chance(this)
+                    chanceCard(this)
                     break;
                 case 36:
-                    chance(this)
+                    chanceCard(this)
                     break;
             }
         }
@@ -158,14 +158,14 @@ function initalizeGame() {
 
     statRefresh()
 
-    // x=0
-    // while (x<50) {
-    //     roll(player1)
-    //     roll(player2)
-    //     roll(player3)
-    //     roll(player4)
-    //     x++
-    // }
+    x=0
+    while (x<100) {
+        roll(player1)
+        roll(player2)
+        roll(player3)
+        roll(player4)
+        x++
+    }
     
 }
 
@@ -320,8 +320,9 @@ function payRent(payer, payee, spot, multiplier) {
     }
 }
 
-function chance(player) {
+function chanceCard(player) {
     let r = Math.floor(Math.random() * (15 - 1) ) + 1;
+    console.log(r)
     log(italic(chanceCards[r]))
     //log(r)
 
@@ -347,15 +348,39 @@ function chance(player) {
             player.currentSpot = 11
             break;
         case 5:
-            while (player.currentSpot != 20) {
-                player.currentSpot = Math.ceil(player.currentSpot/5)*5;
+            if (player.currentSpot >= 0 && player.currentSpot <=5 ) {
+                player.currentSpot = 5
             }
+            if (player.currentSpot >= 6 && player.currentSpot <=15 ) {
+                player.currentSpot = 15
+            }
+            if (player.currentSpot >= 16 && player.currentSpot <=25 ) {
+                player.currentSpot = 25
+            }
+            if (player.currentSpot >= 26 && player.currentSpot <=35 ) {
+                player.currentSpot = 35
+            } else {
+                player.currentSpot = 5
+            }
+
             canIBuy(player,2)
             break;
         case 6:
-            while (player.currentSpot != 20) {
-                player.currentSpot = Math.ceil(player.currentSpot/5)*5;
+            if (player.currentSpot >= 0 && player.currentSpot <=5 ) {
+                player.currentSpot = 5
             }
+            if (player.currentSpot >= 6 && player.currentSpot <=15 ) {
+                player.currentSpot = 15
+            }
+            if (player.currentSpot >= 16 && player.currentSpot <=25 ) {
+                player.currentSpot = 25
+            }
+            if (player.currentSpot >= 26 && player.currentSpot <=35 ) {
+                player.currentSpot = 35
+            } else {
+                player.currentSpot = 5
+            }
+
             canIBuy(player,2)
             break;
         case 7:
