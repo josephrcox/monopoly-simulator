@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulator</title>
+    <style>
+
+        #stats {
+            position: fixed;
+            width: fit-content;
+            height: fit-content;
+            top: 20px;
+            right: 10px;
+        }
+        #nextTurn {
+            position: fixed;
+            background-color: yellow;
+            bottom: 100px;
+            right: 10px;
+            font-size: 36px;
+            cursor: pointer;
+        }
+        #logDiv {
+            max-width: 50%;
+        }
+        td {
+            border-right: 1px solid black;
+            border-bottom: 1px solid black;
+        }
+
+
+        table {
+            font-size: 15px;
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <div id="logDiv"></div>
+    <div id="stats">
+    </div>
+    <div id="nextTurn">Next turn</div>
+    <script src="script.js"></script>
+</body>
+</html>
