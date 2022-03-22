@@ -3,6 +3,8 @@ const stats = document.getElementById("stats")
 var player1,player2,player3,player4
 var players = []
 
+var playercount = 8 // has to be 8 or less
+
 const availableNames = [
     "dog", "battleship", "race car", "top hat", "cat", "penguin", "t-rex", "rubber ducky"
 ]
@@ -19,6 +21,7 @@ const nonproperties = [
 
 const spotPrices = [-1,60,-1,60,-1,200,100,-1,100,120,-1,140,150,140,160,200,180,-1,180,200,-1,220,-1,220,240,200,260,260,150,280,-1,300,300,-1,320,200,-1,350,-1,400]
 
+
 const spotRents = [-1,2,-1,4,-1,50,6,-1,6,8,-1,10,-1,10,12,50,14,-1,14,16,-1,18,-1,18,20,50,22,22,-1,22,-1,26,26,-1,28,50,-1,35,-1,50];
 
 const housePrices = []
@@ -34,6 +37,9 @@ const monopolies = [
     [31,32,34],
     [37,39]
 ]
+
+let hotelCount = 12
+let houseCount = 32
 
 const propColors = [
     'white','purple','white','purple','white','darkgray','lightblue','white','lightblue','lightblue','white','pink','gray','pink','pink','darkgray','orange','white','orange','orange','white','red','white','red','red','darkgray','yellow','yellow','gray','yellow','white','green','green','white','green','darkgray','white','blue','white','blue'
@@ -60,12 +66,14 @@ function log(x) {
 
 const playerObject = {
     name:undefined,
-    cash:1500,
+    cash:1500, // 1500
     owned:[],
     monopoles:[],
     currentSpot:0,
     inJail:false,
     getOutOfJailRolls:0,
+    houses:[],
+    hotels:[],
 
     init() {
         log(bold(this.name) + " has joined the game!")
@@ -84,7 +92,7 @@ const playerObject = {
         log (bold(this.name) + " rolled: "+r1+" & "+r2)
         log(bold(this.name) + " moved "+(r1+r2)+" spaces from "+spots[this.currentSpot]+" to "+spots[newSpot])
         this.currentSpot = newSpot
-        if (isProperty(this.currentSpot)) {
+        if (isProperty(this.currentSpot) == true) {
             canIBuy(this,1)
         } else {
             // nonproperties
@@ -105,6 +113,13 @@ const playerObject = {
                 case 36:
                     chanceCard(this)
                     break;
+                case 12:
+                    utilitySpot(this, (r1+r2))
+                    break;
+                case 28:
+                    utilitySpot(this, (r1+r2))
+                    break;
+
             }
         }
         statRefresh()
@@ -125,59 +140,93 @@ const playerObject = {
 }
 
 function initalizeGame() {
-    player1 = Object.create(playerObject)
-    player1.name = availableNames[Math.floor(Math.random() * availableNames.length)]
-    availableNames.splice(availableNames.indexOf(player1.name), 1)
-    player1.owned = []
-    player1.monopolies = []
-    player1.init()
+    // player1 = Object.create(playerObject)
+    // player1.name = availableNames[Math.floor(Math.random() * availableNames.length)]
+    // availableNames.splice(availableNames.indexOf(player1.name), 1)
+    // player1.owned = []
+    // player1.houses = []
+    // player1.hotels = []
+    // player1.monopolies = []
+    // player1.init()
+    // players.push(player1)
 
-    player2 = Object.create(playerObject)
-    player2.name = availableNames[Math.floor(Math.random() * availableNames.length)]
-    availableNames.splice(availableNames.indexOf(player2.name), 1)
-    player2.owned = []
-    player2.monopolies = []
-    player2.init()
+    // player2 = Object.create(playerObject)
+    // player2.name = availableNames[Math.floor(Math.random() * availableNames.length)]
+    // availableNames.splice(availableNames.indexOf(player2.name), 1)
+    // player2.owned = []
+    // player2.houses = []
+    // player2.hotels = []
+    // player2.monopolies = []
+    // player2.init()
+    // players.push(player2)
 
-    player3 = Object.create(playerObject)
-    player3.name = availableNames[Math.floor(Math.random() * availableNames.length)]
-    availableNames.splice(availableNames.indexOf(player3.name), 1)
-    player3.owned = []
-    player3.monopolies = []
-    player3.init()
+    // if (playercount > 2) {
+    //     player3 = Object.create(playerObject)
+    //     player3.name = availableNames[Math.floor(Math.random() * availableNames.length)]
+    //     availableNames.splice(availableNames.indexOf(player3.name), 1)
+    //     player3.owned = []
+    //     player3.houses = []
+    //     player3.hotels = []
+    //     player3.monopolies = []
+    //     player3.init()
+    //     players.push(player3)
+    // }
+    // if (playercount > 3) {
+    //     player4 = Object.create(playerObject)
+    //     player4.name = availableNames[Math.floor(Math.random() * availableNames.length)]
+    //     availableNames.splice(availableNames.indexOf(player4.name), 1)
+    //     player4.owned = []
+    //     player4.houses = []
+    //     player4.hotels = []
+    //     player4.monopolies = []
+    //     player4.init()
+    //     log("<br/>")
+    //     players.push(player4)
+    // }
 
-    player4 = Object.create(playerObject)
-    player4.name = availableNames[Math.floor(Math.random() * availableNames.length)]
-    availableNames.splice(availableNames.indexOf(player4.name), 1)
-    player4.owned = []
-    player4.monopolies = []
-    player4.init()
-    log("<br/>")
-    
-    players.push(player1,player2,player3,player4)
+    for (let i=0;i<playercount;i++) {
+        player = Object.create(playerObject)
+        player.name = availableNames[Math.floor(Math.random() * availableNames.length)]
+        availableNames.splice(availableNames.indexOf(player.name), 1)
+        player.owned = []
+        player.houses = []
+        player.hotels = []
+        player.monopolies = []
+        player.init()
+        players.push(player)
+    }
 
     statRefresh()
 
-    x=0
-    while (x<100) {
-        roll(player1)
-        roll(player2)
-        roll(player3)
-        roll(player4)
-        x++
-    }
+    // x=0
+    // while (x<20) {
+    //     for (let i=0;i<players.length;i++) {
+    //         roll(players[i])
+    //     }
+    //     x++
+    // }
     
 }
 
 document.getElementById("nextTurn").onclick = function() {
-    roll(player1)
-    roll(player2)
-    roll(player3)
-    roll(player4)
+    for (let i=0;i<players.length;i++) {
+        roll(players[i])
+    }
+}
+
+document.getElementById("nextTurn10").onclick = function() {
+    x=0
+    while (x<10) {
+        for (let i=0;i<players.length;i++) {
+            roll(players[i])
+        }
+        x++
+    }
 }
 
 function roll(player) {
     if (!player.inJail) {
+        upgradeProperties(player)
         let r1,r2
         let consec = 0
         let consecTimes = ["first", "second", "third"]
@@ -252,9 +301,23 @@ function statRefresh() {
         var prop = r.insertCell(4)
         for (let x=0;x<players[i].owned.length;x++) {
             let color = propColors[players[i].owned[x]]
-            prop.innerHTML += "<span style='background-color:"+color+"'>"+spots[players[i].owned[x]]+"</span></br>"
+            prop.innerHTML += "</br><span style='background-color:"+color+"'>"+spots[players[i].owned[x]]+"</span>"
+        }
+
+
+
+        var monopolies = r.insertCell(5)
+        for (let x=0;x<players[i].monopolies.length;x++) {
+            let color = propColors[players[i].monopolies[x]]
+            if (monopolies.innerHTML.indexOf(color) == -1) {
+                monopolies.innerHTML += color + "</br>"
+            }
+        
         }
         
+        if (players[i].cash <= 0) {
+            alert(players[i].name +" has run out of money.")
+        }
 
         stats.append(t)
     }
@@ -262,8 +325,14 @@ function statRefresh() {
 }
 
 function isProperty(x) {
+    console.log("checking if "+spots[x]+" is a property")
     if (nonproperties.indexOf(x) == -1) {
+        console.log("yes")
         return true
+        
+    } else {
+        console.log("no")
+        return false
     }
 }
 
@@ -290,11 +359,16 @@ function canIBuy(x, multiplier) {
         if (players[i].owned.indexOf(x.currentSpot) != -1) {
             alreadyPurchased = true
             purchasedBy = players[i]
-            log(spots[x.currentSpot]+" is already owned by "+purchasedBy.name)
+            
         }
     }
     if (alreadyPurchased) {
-        payRent(x, purchasedBy, x.currentSpot, multiplier)
+        if (x == purchasedBy) {
+            log(purchasedBy.name+" owns "+spots[x.currentSpot])
+        } else {
+            payRent(x, purchasedBy, x.currentSpot, multiplier)
+        }
+        
     } else if (x.cash > spotPrices[x.currentSpot]) {
         if (Math.floor(Math.random() * 9) + 1 <= 8) {
             // buy it 80% of the time if you have the cash
@@ -313,10 +387,29 @@ function payRent(payer, payee, spot, multiplier) {
         rent = rent * 2
         log(bold(payer.name)+" will be paying double, as " +bold(payee.name)+" has the "+bold(propColors[spot])+" monopoly")
     }
+
+    let housesOnSpot = 0
+    if (spots[spot].indexOf('🏠') != -1) {
+        housesOnSpot = spots[spot].split('🏠').length - 1
+    }
+    if (housesOnSpot == 1) {
+        rent = mono_1house[spot]
+    } else if (housesOnSpot == 2) {
+        rent = mono_2house[spot]
+    } else if (housesOnSpot == 3) {
+        rent = mono_3house[spot]
+    } else if (housesOnSpot == 4) {
+        rent = mono_4house[spot]
+    }
+
+    log("Rent is... "+rent)
+
     if (payer.cash > rent*multiplier) {
         payer.cash -= rent*multiplier
         payee.cash += rent*multiplier
         log(bold(payer.name)+" paid " +bold(payee.name)+" $"+rent*multiplier+" for rent at "+spots[spot])
+    } else {
+        alert(payer+" has run out of money and lost. They could not afford to pay "+payer.name+" $"+rent)
     }
 }
 
@@ -410,7 +503,7 @@ function chanceCard(player) {
             break;
         case 14:
             player.cash -= 250
-            for (let i=0;i<4;i++) {
+            for (let i=0;i<players.length;i++) {
                 players[i].cash += 50
             }
             break;
@@ -437,8 +530,106 @@ function uniq_fast(a) {
     return out;
 }
 
+function upgradeProperties(player) {
+    // this is called when a players turn is up, and they have at least one monopoly
+    
+    var sets = [] // monopolies in like pairs, i.e. [[1,3], [37,39]]
+
+    for (let m=0;m<player.monopolies.length;m++) {
+        let housesToBuy = 0
+        let hotelsToBuy = 0
+        housesToBuy = Math.floor((player.cash/player.monopolies.length) / pricePerHouse[player.monopolies[m]])
+
+        while (housesToBuy > 4) {
+            hotelsToBuy++
+            housesToBuy -= 5 // cost of all houses + 1 hotel
+        }
+
+        let housesOnSpot = 0
+        if (spots[player.monopolies[m]].indexOf('🏠') != -1) {
+            housesOnSpot = spots[player.monopolies[m]].split('🏠').length - 1
+        }
+        
+        let hotelsOnSpot = 0
+        if (spots[player.monopolies[m]].indexOf('🏨') != -1) {
+            hotelsOnSpot = spots[player.monopolies[m]].split('🏨').length - 1
+        }
+        
+        if (housesOnSpot >= 4) {housesToBuy = 0}
+        if (hotelsOnSpot >= 1) {hotelsToBuy = 0}
+
+        if (housesToBuy + housesOnSpot > 4) {housesToBuy = 4 - housesOnSpot}
+        if (hotelsToBuy + hotelsOnSpot > 1) {hotelsToBuy = 1 - hotelsOnSpot}
+
+        while(hotelsToBuy > 0 && hotelCount > 0 && player.cash > 0) {
+            if (hotelCount >= hotelsToBuy) {
+                // buy the hotels
+                player.hotels.push(player.monopolies[m])
+                player.cash -= (5*pricePerHouse[player.monopolies[m]])
+                spots[player.monopolies[m]] += "🏨"
+                hotelsToBuy -= 1
+                log(bold(player.name) +" has bought 1 hotel on "+spots[player.monopolies[m]])
+            } else {
+                hotelsToBuy = 0
+            }
+        }
+
+        while(housesToBuy > 0 && houseCount > 0 && player.cash > 0) {
+            if (houseCount >= housesToBuy) {
+                // buy the houses
+                player.houses.push(player.monopolies[m])
+                player.cash -= pricePerHouse[player.monopolies[m]]
+                housesToBuy -= 1
+                spots[player.monopolies[m]] += "🏠"
+                log(bold(player.name) +" has bought 1 house on "+spots[player.monopolies[m]])
+            } else {
+                housesToBuy = 0
+            }
+        }
 
 
+
+        
+    }
+    statRefresh()
+}
+
+function utilitySpot(player, roll) {
+    let alreadyPurchased = false
+    let purchasedBy
+    for (let i=0;i<players.length;i++) {
+        if (players[i].owned.indexOf(player.currentSpot) != -1) {
+            alreadyPurchased = true
+            purchasedBy = players[i]
+            
+        }
+    }
+    if (alreadyPurchased) {
+        let double = false
+        let owner
+        for (let i=0;i<players.length;i++) {
+            if (players[i].owned.indexOf(12) != -1 && players[i].owned.indexOf(28) != -1) {
+                double = true
+            }
+        }
+        rent = roll * 10
+    
+        if (double) {
+            log(bold(purchasedBy) + " owns both utilities, so the rent will be double.")
+            rent = rent * 2
+        }
+        
+        log("Rent is... "+rent)
+        player.cash -= rent
+        purchasedBy.cash += rent
+        log(bold(payer.name)+" paid " +bold(payee.name)+" $"+rent+" for rent at "+spots[spot])
+        
+    } else {
+        canIBuy(player,1)
+    }
+    
+
+}
 
 initalizeGame()
 

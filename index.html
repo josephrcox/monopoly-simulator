@@ -14,13 +14,16 @@
             top: 20px;
             right: 10px;
         }
-        #nextTurn {
+        #nextTurn, #nextTurn10 {
             position: fixed;
             background-color: yellow;
-            bottom: 100px;
+            bottom: 0px;
             right: 10px;
             font-size: 36px;
             cursor: pointer;
+        }
+        #nextTurn {
+            bottom: 50px;
         }
         #logDiv {
             max-width: 50%;
@@ -29,7 +32,6 @@
             border-right: 1px solid black;
             border-bottom: 1px solid black;
         }
-
 
         table {
             font-size: 15px;
@@ -42,6 +44,7 @@
     <div id="stats">
     </div>
     <div id="nextTurn">Next turn</div>
+    <div id="nextTurn10">+10 turns</div>
     <script src="script.js"></script>
 </body>
 </html>
