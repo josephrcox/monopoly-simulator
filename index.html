@@ -14,7 +14,7 @@
             top: 20px;
             right: 10px;
         }
-        #nextTurn, #nextTurn10 {
+        #nextTurn, #nextTurn10, #turnCounter {
             position: fixed;
             background-color: yellow;
             bottom: 0px;
@@ -27,6 +27,11 @@
         }
         #logDiv {
             max-width: 50%;
+        }
+        #turnCounter {
+            right:300px;
+            background-color: white;
+            cursor:unset;
         }
         td {
             border-right: 1px solid black;
@@ -41,6 +46,7 @@
 </head>
 <body>
     <div id="logDiv"></div>
+    <div id="turnCounter">Turn 0</div>
     <div id="stats">
     </div>
     <div id="nextTurn">Next turn</div>

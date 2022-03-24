@@ -2,8 +2,10 @@ const logs = document.getElementById("logDiv")
 const stats = document.getElementById("stats")
 var player1,player2,player3,player4
 var players = []
+let turnCount = 0
+let turnCounter = document.getElementById("turnCounter")
 
-var playercount = 8 // has to be 8 or less
+var playercount = 4 // has to be 8 or less
 
 const availableNames = [
     "dog", "battleship", "race car", "top hat", "cat", "penguin", "t-rex", "rubber ducky"
@@ -19,12 +21,25 @@ const nonproperties = [
     0,2,4,7,10,17,20,22,30,33,36,38
 ]
 
+var housesOnEverySpot = new Array(40)
+var hotelsOnEverySpot = new Array(40)
+
+for (let index = 0; index < housesOnEverySpot.length; index++) {
+    housesOnEverySpot[index] = 0
+}
+for (let index = 0; index < hotelsOnEverySpot.length; index++) {
+    hotelsOnEverySpot[index] = 0
+}
+
 const spotPrices = [-1,60,-1,60,-1,200,100,-1,100,120,-1,140,150,140,160,200,180,-1,180,200,-1,220,-1,220,240,200,260,260,150,280,-1,300,300,-1,320,200,-1,350,-1,400]
 
+const propsToMonopoly = [2,4,3,3,3,3,3,3,2]
 
 const spotRents = [-1,2,-1,4,-1,50,6,-1,6,8,-1,10,-1,10,12,50,14,-1,14,16,-1,18,-1,18,20,50,22,22,-1,22,-1,26,26,-1,28,50,-1,35,-1,50];
 
 const housePrices = []
+
+const whoOwns = new Array(40)
 
 const monopolies = [
     [1,3],
@@ -74,6 +89,8 @@ const playerObject = {
     getOutOfJailRolls:0,
     houses:[],
     hotels:[],
+    playing:true,
+    eliminated_turn:-1,
 
     init() {
         log(bold(this.name) + " has joined the game!")
@@ -140,50 +157,6 @@ const playerObject = {
 }
 
 function initalizeGame() {
-    // player1 = Object.create(playerObject)
-    // player1.name = availableNames[Math.floor(Math.random() * availableNames.length)]
-    // availableNames.splice(availableNames.indexOf(player1.name), 1)
-    // player1.owned = []
-    // player1.houses = []
-    // player1.hotels = []
-    // player1.monopolies = []
-    // player1.init()
-    // players.push(player1)
-
-    // player2 = Object.create(playerObject)
-    // player2.name = availableNames[Math.floor(Math.random() * availableNames.length)]
-    // availableNames.splice(availableNames.indexOf(player2.name), 1)
-    // player2.owned = []
-    // player2.houses = []
-    // player2.hotels = []
-    // player2.monopolies = []
-    // player2.init()
-    // players.push(player2)
-
-    // if (playercount > 2) {
-    //     player3 = Object.create(playerObject)
-    //     player3.name = availableNames[Math.floor(Math.random() * availableNames.length)]
-    //     availableNames.splice(availableNames.indexOf(player3.name), 1)
-    //     player3.owned = []
-    //     player3.houses = []
-    //     player3.hotels = []
-    //     player3.monopolies = []
-    //     player3.init()
-    //     players.push(player3)
-    // }
-    // if (playercount > 3) {
-    //     player4 = Object.create(playerObject)
-    //     player4.name = availableNames[Math.floor(Math.random() * availableNames.length)]
-    //     availableNames.splice(availableNames.indexOf(player4.name), 1)
-    //     player4.owned = []
-    //     player4.houses = []
-    //     player4.hotels = []
-    //     player4.monopolies = []
-    //     player4.init()
-    //     log("<br/>")
-    //     players.push(player4)
-    // }
-
     for (let i=0;i<playercount;i++) {
         player = Object.create(playerObject)
         player.name = availableNames[Math.floor(Math.random() * availableNames.length)]
@@ -192,33 +165,36 @@ function initalizeGame() {
         player.houses = []
         player.hotels = []
         player.monopolies = []
+        player.playing = true
         player.init()
         players.push(player)
     }
 
     statRefresh()
-
-    // x=0
-    // while (x<20) {
-    //     for (let i=0;i<players.length;i++) {
-    //         roll(players[i])
-    //     }
-    //     x++
-    // }
     
 }
 
 document.getElementById("nextTurn").onclick = function() {
+    turnCount++
+    turnCounter.innerHTML = "Turn "+turnCount
     for (let i=0;i<players.length;i++) {
-        roll(players[i])
+        if (players[i].playing) {
+            roll(players[i])
+        }
+        
     }
 }
 
 document.getElementById("nextTurn10").onclick = function() {
+
     x=0
     while (x<10) {
+        turnCount++
+        turnCounter.innerHTML = "Turn "+turnCount
         for (let i=0;i<players.length;i++) {
-            roll(players[i])
+            if (players[i].playing) {
+                roll(players[i])
+            }
         }
         x++
     }
@@ -226,6 +202,7 @@ document.getElementById("nextTurn10").onclick = function() {
 
 function roll(player) {
     if (!player.inJail) {
+        checkForTrades(player)
         upgradeProperties(player)
         let r1,r2
         let consec = 0
@@ -284,54 +261,50 @@ function statRefresh() {
     var t = document.createElement("table")
     stats.innerHTML = ""
     for (let i=0;i<players.length;i++) {
-        updateMonopolies(players[i])
-        var r = t.insertRow(0)
-        var name = r.insertCell(0)
-        name.innerText = players[i].name
-
-        var cash = r.insertCell(1)
-        cash.innerText = "$"+players[i].cash
-
-        var spot = r.insertCell(2)
-        spot.innerText = spots[players[i].currentSpot]
-
-        var jail = r.insertCell(3)
-        jail.innerText = "Jailed:"+players[i].inJail
-
-        var prop = r.insertCell(4)
-        for (let x=0;x<players[i].owned.length;x++) {
-            let color = propColors[players[i].owned[x]]
-            prop.innerHTML += "</br><span style='background-color:"+color+"'>"+spots[players[i].owned[x]]+"</span>"
-        }
-
-
-
-        var monopolies = r.insertCell(5)
-        for (let x=0;x<players[i].monopolies.length;x++) {
-            let color = propColors[players[i].monopolies[x]]
-            if (monopolies.innerHTML.indexOf(color) == -1) {
-                monopolies.innerHTML += color + "</br>"
+        if (players[i].playing) {
+            updateMonopolies(players[i])
+            var r = t.insertRow(0)
+            var name = r.insertCell(0)
+            name.innerText = players[i].name
+    
+            var cash = r.insertCell(1)
+            cash.innerText = "$"+players[i].cash
+    
+            var spot = r.insertCell(2)
+            spot.innerText = spots[players[i].currentSpot]
+    
+            var jail = r.insertCell(3)
+            jail.innerText = "Jailed:"+players[i].inJail
+    
+            var prop = r.insertCell(4)
+            for (let x=0;x<players[i].owned.length;x++) {
+                let color = propColors[players[i].owned[x]]
+                prop.innerHTML += "</br><span style='background-color:"+color+"'>"+spots[players[i].owned[x]]+"</span>"
             }
-        
-        }
-        
-        if (players[i].cash <= 0) {
-            alert(players[i].name +" has run out of money.")
+    
+    
+    
+            var monopolies = r.insertCell(5)
+            for (let x=0;x<players[i].monopolies.length;x++) {
+                let color = propColors[players[i].monopolies[x]]
+                if (monopolies.innerHTML.indexOf(color) == -1) {
+                    monopolies.innerHTML += color + "</br>"
+                }
+            
+            }
+    
+            stats.append(t)
         }
 
-        stats.append(t)
     }
 
 }
 
 function isProperty(x) {
-    console.log("checking if "+spots[x]+" is a property")
     if (nonproperties.indexOf(x) == -1) {
-        console.log("yes")
         return true
         
     } else {
-        console.log("no")
         return false
     }
 }
@@ -373,6 +346,7 @@ function canIBuy(x, multiplier) {
         if (Math.floor(Math.random() * 9) + 1 <= 8) {
             // buy it 80% of the time if you have the cash
             log(bold(x.name) + " is buying "+spots[x.currentSpot] +" for $"+spotPrices[x.currentSpot])
+            whoOwns[x.currentSpot] = x
             x.purchase()
 
         } else {
@@ -409,13 +383,20 @@ function payRent(payer, payee, spot, multiplier) {
         payee.cash += rent*multiplier
         log(bold(payer.name)+" paid " +bold(payee.name)+" $"+rent*multiplier+" for rent at "+spots[spot])
     } else {
-        alert(payer+" has run out of money and lost. They could not afford to pay "+payer.name+" $"+rent)
+        makeSomeDough(payer, rent*multiplier)
+        if (payer.cash > rent*multiplier) {
+            payer.cash -= rent*multiplier
+            payee.cash += rent*multiplier
+            log(bold(payer.name)+" paid " +bold(payee.name)+" $"+rent*multiplier+" for rent at "+spots[spot])
+        } else {
+            gameOverFor(payer,payee)
+        }
+        
     }
 }
 
 function chanceCard(player) {
     let r = Math.floor(Math.random() * (15 - 1) ) + 1;
-    console.log(r)
     log(italic(chanceCards[r]))
     //log(r)
 
@@ -567,6 +548,7 @@ function upgradeProperties(player) {
                 player.hotels.push(player.monopolies[m])
                 player.cash -= (5*pricePerHouse[player.monopolies[m]])
                 spots[player.monopolies[m]] += "🏨"
+                hotelsOnEverySpot[player.monopolies[m]] += 1
                 hotelsToBuy -= 1
                 log(bold(player.name) +" has bought 1 hotel on "+spots[player.monopolies[m]])
             } else {
@@ -581,6 +563,7 @@ function upgradeProperties(player) {
                 player.cash -= pricePerHouse[player.monopolies[m]]
                 housesToBuy -= 1
                 spots[player.monopolies[m]] += "🏠"
+                housesOnEverySpot[player.monopolies[m]] += 1
                 log(bold(player.name) +" has bought 1 house on "+spots[player.monopolies[m]])
             } else {
                 housesToBuy = 0
@@ -631,6 +614,166 @@ function utilitySpot(player, roll) {
 
 }
 
+function checkForTrades(player) {
+    let possibleMonopolies = []
+    let matchingInMonopoly
+    for (let m = 0;m<monopolies.length;m++) {
+        matchingInMonopoly = 0
+        for (let i =0;i<player.owned.length;i++) {
+            if (monopolies[m].indexOf(player.owned[i]) != -1) {
+                // found matching monopoly, now check count
+                matchingInMonopoly++
+            }
+
+        }
+        if (matchingInMonopoly > 0) {
+            possibleMonopolies.push(monopolies[m])
+        }
+        
+    }
+
+    for (let i=0;i<possibleMonopolies.length;i++) {
+        for (let j=0;j<possibleMonopolies[i].length;j++) {
+            if (whoOwns[possibleMonopolies[i][j]] != null && whoOwns[possibleMonopolies[i][j]] != player) {
+                // someone owns this and it's not the player looking to get it
+                purchasedBy = whoOwns[possibleMonopolies[i][j]]
+                let spotPrice = possibleMonopolies[i][j]
+                let offer = 0
+                if (spotPrice*2 < player.cash-100) {
+                    offer = random(spotPrice*2, player.cash-100)
+                } else {
+                    offer = random(spotPrice, spotPrice*2)
+                }
+                
+                if (offer < player.cash*0.5) {
+                    if (random(1,100) >= 90) { // only proceed ~5% of the time
+                        if (offer > (purchasedBy.cash * 0.2)) {
+                            // if the offer would increase the original owners cash by 20%, agree to deal
+                            log(bold(purchasedBy.name) + " will be selling "+italic(spots[possibleMonopolies[i][j]])+" to "+player.name+" for $"+offer)
+
+                            whoOwns[possibleMonopolies[i][j]] = player
+                            player.owned.push(possibleMonopolies[i][j])
+                            let removeindex = purchasedBy.owned.indexOf(possibleMonopolies[i][j])
+                            purchasedBy.owned.splice(removeindex,1)
+
+                            player.cash -= offer
+                            purchasedBy.cash += offer
+                        } else {
+                            log(bold(player.name) + " attempted to buy "+italic(spots[possibleMonopolies[i][j]])+" from "+bold(purchasedBy.name)+" for $"+offer+", but the offer was declined.")
+                        }
+                    } else {
+                        log(bold(player.name) + " attempted to buy "+italic(spots[possibleMonopolies[i][j]])+" from "+bold(purchasedBy.name)+" for $"+offer+", but the offer was declined.")
+                    }
+                }
+            }
+        }
+    }
+
+    statRefresh()
+}
+
+function makeSomeDough(player, debt) {
+    let assets_upgrades = 0 // total $ in houses and hotels
+    // let assets_properties = 0 // total $ in properties that we can mortgage
+    let housesToSell = []
+    let hotelsToSell = []
+
+    for (let i=0;i<player.houses.length;i++) {
+        assets_upgrades += pricePerHouse[player.houses[i]]
+        housesToSell.push(player.houses[i])
+        if (assets_upgrades > debt) {
+            i = player.houses.length+1
+        }
+    }
+    for (let i=0;i<player.hotels.length;i++) {
+        assets_upgrades += (5*pricePerHouse[player.hotels[i]])
+        hotelsToSell.push(player.hotels[i])
+        if (assets_upgrades > debt) {
+            i = player.houses.length+1
+        }
+    }
+
+    if ((assets_upgrades) < debt) {
+        // gameover!
+    } else {
+        for (let i=0;i<housesToSell.length;i++) {
+            let h = housesToSell.pop()
+            housesOnEverySpot[h] -= 1
+            player.cash += pricePerHouse[h]
+            spots[h] = removeAllEmojis(spots[h])
+            for (let x=0;x<hotelsOnEverySpot[h];x++) {
+                spots[h] += "🏨"
+            }
+            for (let x=0;x<housesOnEverySpot[h];x++) {
+                spots[h] += "🏠"
+            }
+            log(player.name + " has sold 1 house on "+spots[h]+" for $"+pricePerHouse[h])
+            
+        }
+        for (let i=0;i<hotelsToSell.length;i++) {
+            let h = hotelsToSell.pop()
+            hotelsOnEverySpot[h] -= 1
+            player.cash += (5*pricePerHouse[h])
+            spots[h] = removeAllEmojis(spots[h])
+            for (let x=0;x<hotelsOnEverySpot[h];x++) {
+                spots[h] += "🏨"
+            }
+            for (let x=0;x<housesOnEverySpot[h];x++) {
+                spots[h] += "🏠"
+            }
+            log(player.name + " has sold 1 hotel on "+spots[h]+" for $"+(5*pricePerHouse[h]))
+
+        }
+    }
+    statRefresh()
+
+
+}
+
+function random(min,max) {
+    return Math.floor(Math.random() * (max - min +1)) + min
+}
+
 initalizeGame()
 
+//🏠🏨
+
+
+function setCharAt(str,index,chr) {
+    if(index > str.length-1) return str;
+    return str.substring(0,index) + chr + str.substring(index+1);
+}
+
+function removeAllEmojis(str) {
+    return str.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '');
+}
+
+function gameOverFor(player, winner) {
+    winner.owned = player.owned.concat(winner.owned.filter((item) => player.owned.indexOf(item) < 0))
+    player.owned = []
+    for (let i=0;i<winner.owned;i++) {
+        whoOwns[winner.owned[i]] = winner
+    }
+    console.log(winner.owned)
+
+    player.cash = -1
+    player.playing = false
+    log(italic(bold(player.name) + " has been eliminated by "+bold(winner.name)+"!!!"))
+    player.eliminated_turn = turnCount
+
+    let playing = players.filter(x => x.playing === true)
+
+    if (playing.length == 1) {
+        end(playing)
+    }
+    statRefresh()
+}
+
+function end(winner) {
+    let leaderboard = ""
+    for (let i=0;i<players;i++) {
+        leaderboard += players[i].name+" lasted until turn "+players[i].eliminated_turn+"</br>"
+    }
+    alert("The game has ended with "+winner.name+" as the winner!</br>"+leaderboard)
+}
 
