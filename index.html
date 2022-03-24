@@ -13,6 +13,7 @@
             height: fit-content;
             top: 20px;
             right: 10px;
+
         }
         #nextTurn, #nextTurn10, #turnCounter {
             position: fixed;
@@ -41,6 +42,24 @@
         table {
             font-size: 15px;
             border: 1px solid black;
+        }
+        @media only screen and (max-width: 799px) {
+            #logDiv {
+                display: none;
+            }
+            #stats {
+                width: fit-content;
+                height: fit-content;
+                overflow-x: auto;
+                overflow-y: hidden;
+                white-space: nowrap;
+                position: unset;
+                top: unset;
+                right: unset;
+            }
+            #turnCounter {
+                position: unset;
+            }
         }
     </style>
 </head>

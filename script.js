@@ -76,7 +76,10 @@ var chanceCards = ['','Advance to Boardwalk','Advance to Go (Collect $200)','Adv
 ];
 
 function log(x) {
-    logs.innerHTML += "</br>" + x
+    if (screen.width > 800) {
+        logs.innerHTML += "</br>" + x
+    }
+    
 }
 
 const playerObject = {
